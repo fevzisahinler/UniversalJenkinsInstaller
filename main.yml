@@ -19,15 +19,15 @@
         create_home: yes
 
     - name: Install Jenkins on Debian/Ubuntu
-      import_tasks: playbooks/debian-ubuntu.yml
+      import_tasks: jenkins-playbooks/debian-ubuntu.yml
       when: ansible_facts['os_family'] == "Debian"
     
     - name: Install Jenkins on Fedora
-      import_tasks: playbooks/fedora.yml
+      import_tasks: jenkins-playbooks/fedora.yml
       when: ansible_facts['os_family'] == "Fedora"
     
     - name: Install Jenkins on Red Hat/Alma/Rocky
-      import_tasks: playbooks/redhat.yml
+      import_tasks: jenkins-playbooks/redhat.yml
       when: ansible_facts['os_family'] == "RedHat"
     
     - name: Check Jenkins service status
