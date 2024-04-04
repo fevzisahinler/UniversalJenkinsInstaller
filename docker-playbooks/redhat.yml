@@ -1,0 +1,63 @@
+---
+- name: Prepare the System for Docker Installation on RHEL
+  hosts: all
+  become: yes
+  tasks:
+    - name: Remove older versions of Docker and associated packages
+      yum:
+        name:
+          - docker
+          - docker-client
+          - docker-client-latest
+          - docker-common
+          - docker-latest
+          - docker-latest-logrotate
+          - docker-logrotate
+          - docker-engine
+          - podman
+          - runc
+        state: absent
+      ignore_errors: yes
+
+    - name: Install required packages for Docker repository
+      yum:
+        name: yum-utils
+        state: present
+
+    - name: Add Docker CE repository
+      ansible.builtin.command:
+        cmd: yum-config-manager --add-repo https://download.docker.com/linux/rhel/docker-ce.repo
+      args:
+        warn: false
+
+    - name: Install Docker Engine, Docker CLI, containerd, and Docker Compose
+      yum:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
+
+    - name: Start and enable Docker service
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Add current user to the docker group (optional)
+      ansible.builtin.user:
+        name: "{{ ansible_user_id }}"
+        groups: docker
+        append: yes
+      when: ansible_user_id != 'root'
+
+    - name: Verify Docker Engine installation
+      command: docker run hello-world
+      register: verification_result
+      ignore_errors: yes
+
+    - name: Show verification result
+      debug:
+        msg: "{{ verification_result.stdout_lines }}"
