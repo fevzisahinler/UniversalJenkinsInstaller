@@ -1,0 +1,60 @@
+---
+- name: Install Jenkins on Various Platforms
+  hosts: localhost
+  gather_facts: yes
+  
+  tasks:
+
+    - name: Ensure Jenkins group exists
+      ansible.builtin.group:
+        name: jenkins
+        state: present
+
+    - name: Ensure Jenkins user exists with /bin/false shell
+      ansible.builtin.user:
+        name: jenkins
+        group: jenkins
+        shell: /bin/false
+        state: present
+        create_home: yes
+
+    - name: Install Jenkins on Debian/Ubuntu
+      import_tasks: playbooks/debian-ubuntu.yml
+      when: ansible_facts['os_family'] == "Debian"
+    
+    - name: Install Jenkins on Fedora
+      import_tasks: playbooks/fedora.yml
+      when: ansible_facts['os_family'] == "Fedora"
+    
+    - name: Install Jenkins on Red Hat/Alma/Rocky
+      import_tasks: playbooks/redhat.yml
+      when: ansible_facts['os_family'] == "RedHat"
+    
+    - name: Check Jenkins service status
+      systemd:
+        name: jenkins
+        state: started
+      register: jenkins_service_status
+      ignore_errors: yes
+    
+    - name: Get Jenkins initial admin password
+      command: cat /var/lib/jenkins/secrets/initialAdminPassword
+      register: jenkins_initial_admin_password
+      when: jenkins_service_status is defined and jenkins_service_status.changed
+    
+    - name: Print Jenkins initial admin password
+      debug:
+        msg: "Initial Admin Password: {{ jenkins_initial_admin_password.stdout }}"
+      when: jenkins_initial_admin_password is defined and not jenkins_initial_admin_password.failed
+
+    - name: Verify Jenkins service is active (Debian/Ubuntu, Fedora, Red Hat/Alma/Rocky)
+      systemd:
+        name: jenkins
+        state: started
+      register: jenkins_service
+      when: ansible_facts['os_family'] in ["Debian", "RedHat", "Fedora"]
+
+    - name: Display service status
+      debug:
+        msg: "Jenkins service status: {{ jenkins_service.status }}"
+      when: jenkins_service is defined
