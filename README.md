@@ -24,14 +24,14 @@ To use `UniversalJenkinsInstaller`, follow these steps:
 
 1. **Clone the repository**:
 
-    git clone https://github.com/yourusername/UniversalJenkinsInstaller.git
+    git clone https://github.com/fevzisahinler/UniversalJenkinsInstaller.git
 
-2. **Navigate to the project directory**:
+3. **Navigate to the project directory**:
 
     cd UniversalJenkinsInstaller
 
 
-3. **Configure your inventory**:
+4. **Configure your inventory**:
 
 Edit the `inventory/hosts.ini` file to include the IP addresses or hostnames of your target servers. For example:
 
